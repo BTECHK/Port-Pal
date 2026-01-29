@@ -1,0 +1,96 @@
+---
+
+### 1. Product Requirements Document (PRD): Port Pal
+
+**Version:** 2.0 (Final "Ship" Version)
+**Status:** Ready for Development
+**Author:** Vibe Code Infrastructure Team
+
+#### **1. Overview**
+
+**1.1 Problem Statement:**
+"Vibe Coders" (developers using AI agents like Cursor/Windsurf) face constant friction when spinning up multiple microservices. Manually tracking port assignments (`3000`, `8080`, `5432`) causes "Context Switching," breaking the flow state.
+**1.2 Opportunity:**
+AI agents are excellent at writing code but poor at "system awareness." By providing a secure, deterministic tool for port management, we bridge the gap between AI generation and local system reality.
+**1.3 Solution Summary:**
+**Port Pal** is a local-first infrastructure utility consisting of:
+
+1. **The Engine:** A secure Python CLI (`port_pal.py`) that handles atomic locking, OS-verification, and `.env` updates.
+2. **The Dashboard:** A read-only Streamlit interface (`dashboard.py`) for visualization.
+
+#### **2. Success Metrics**
+
+* **Primary (North Star):** **0% Collision Rate** (User never sees `EADDRINUSE`).
+* **Performance:** < 500ms latency for port assignment.
+* **Safety:** **0% System Corruption** (Tool never writes outside user-designated project files).
+
+#### **3. User Stories & Functional Requirements**
+
+| ID | User Story | Tech Requirement | Priority |
+| --- | --- | --- | --- |
+| **US-1** | As an AI Agent, I want to request a "Web" port and get a guaranteed free number. | **Logic:** Check `ports.json` -> Verify via `socket.bind` -> Return Int. | **P0** |
+| **US-2** | As a user, I want my `.env` file updated automatically. | **Logic:** Parse `.env`, find/replace or append `PORT=XXXX`. | **P0** |
+| **US-3** | As a system, I need to prevent two agents from grabbing the same port simultaneously. | **Security:** Implement `fcntl`/`msvcrt` atomic file locking on the registry. | **P0** |
+| **US-4** | As a user, I want to see my active ports in a dashboard. | **UI:** Streamlit app reads `ports.json` (Read-Only mode). | **P1** |
+
+#### **4. Security & Compliance (Non-Negotiable)**
+
+* **SEC-01 Input Sanitization:** The `--env` path must be validated to prevent Directory Traversal (`..`) or writing to system roots (`/etc`, `C:\Windows`).
+* **SEC-02 Least Privilege:** The tool must detect and **block** execution if run as `root` or `Administrator`.
+* **SEC-03 Dashboard Safety:** The dashboard must use `html.escape()` on all displayed data to prevent XSS attacks from malicious project names.
+* **SEC-04 Supply Chain:** All dependencies for the dashboard (`streamlit`, `pandas`) must be pinned in `requirements.txt`.
+
+---
+
+### 2. Product Strategy Diagram
+
+This diagram visualizes **how Port Pal wins**. It shows the "Virtuous Cycle" of Trust: because the tool is secure and invisible, you use it more, which builds a better registry, which makes the dashboard more valuable.
+
+```mermaid
+graph TD
+    %% Nodes
+    Pain(The Pain: "Address Already in Use") -->|Triggers| Adoption(Adoption: Install Port Pal)
+    
+    subgraph "The Trust Loop (Product Engine)"
+        Adoption -->|Use| CLI[The CLI Tool]
+        CLI -->|1. Atomic Lock| Security{Security Check}
+        Security -->|Pass| OS[OS Verification]
+        Security -->|Fail| SafeExit[Safe Exit (Protect System)]
+        OS -->|Confirmed Free| Assignment[Assign Port & Update .env]
+    end
+    
+    Assignment -->|Result| FlowState[User stays in "Flow State"]
+    Assignment -->|Data| Registry[ports.json]
+    
+    subgraph "The Vibe Layer (Retention)"
+        Registry -->|Read-Only| Dashboard[Streamlit Dashboard]
+        Dashboard -->|Visual Reward| Confidence["I know what's running"]
+    end
+    
+    FlowState -->|Reinforces| Adoption
+    Confidence -->|Reinforces| CLI
+
+```
+
+---
+
+### 3. Product Strategy Document (Executive Summary)
+
+*Modeled after your "Pink Ward" example.*
+
+**Strategic Question:** How do we become the "Standard Standard" for local AI development infrastructure?
+
+**The Core Wedge: "Invisible Reliability"**
+Most developer tools try to do too much (managing Docker, logs, deployment). Port Pal's strategy is to do **one thing perfectly**: manage the number.
+
+* **The Hook:** It solves a specific, annoying error (`EADDRINUSE`) that kills AI coding sessions.
+* **The Retention:** Once installed, it becomes invisible. The user doesn't "use" Port Pal; their AI agent uses it. It becomes part of the OS plumbing.
+
+**Competitive Positioning:**
+
+* **vs. Manual Management:** Faster, less error-prone.
+* **vs. Docker Compose:** Lighter weight (no container overhead).
+* **vs. Cloud Dashboards:** **Zero Latency & Zero Cost.** (This was our key pivot—rejecting the Google Cloud deployment to keep it local).
+
+**The "Safety" Moat:**
+By implementing "Paranoid Security" (locking, sanitization, least privilege) *inside* a simple script, we make it safer for users to let AI agents control their terminal. This builds the ultimate currency in the AI era: **Trust.**
