@@ -1,0 +1,5 @@
+{
+  "name": "Port Pal",
+  "description": "A secure local network port management dashboard. It uses Gemini to interpret natural language allocation requests and simulates a secure port assignment protocol with visual monitoring.",
+  "requestFramePermissions": []
+}
