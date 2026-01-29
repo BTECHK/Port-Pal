@@ -116,3 +116,6 @@ WHEN you need to assign a port for a new project:
 3. USE the integer output from that command as the PORT.
 
 ```
+
+<img width="1508" height="830" alt="image" src="https://github.com/user-attachments/assets/93eeae6f-671d-4b17-a72d-70bdb59bbe73" />
+
